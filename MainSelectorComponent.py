@@ -14,10 +14,17 @@ from SubSelectorComponent import *
 from StepSequencerComponent import StepSequencerComponent
 from StepSequencerComponent2 import StepSequencerComponent2
 from _Framework.MomentaryModeObserver import MomentaryModeObserver
+from Launchpad95M4LInterfaceMixin import Launchpad95M4LInterfaceMixin
 
-class MainSelectorComponent(ModeSelectorComponent):
+MODE_NAMES = ('Session', 'Instrument Controller', 'Device Controller', 'User 1', 'Step Sequencer', 'Step Sequencer 2', 'User 2', 'Mixer', 'Scale', 'Quick Scale', 'MultiNote')
+MAP_NAMES = ('Session Mode', 'Instrument Mode','Device Mode', 'User1 Mode', 'Combined Mode', 'Melodic Step Mode', 'User2 Mode', 'Mixer Mode', 'Scale Mode', 'Quick Scale Mode','MultiNote Mode')
+	
+class MainSelectorComponent(ModeSelectorComponent,Launchpad95M4LInterfaceMixin):
+
 	""" Class that reassigns the button on the launchpad to different functions """
-
+	def log(self, message):
+		self._parent.log_message((' '+message+' ').center(50,'='))
+		
 	def __init__(self, matrix, top_buttons, side_buttons, config_button, parent):
 		assert isinstance(matrix, ButtonMatrixElement)
 		assert ((matrix.width() == 8) and (matrix.height() == 8))
@@ -27,6 +34,12 @@ class MainSelectorComponent(ModeSelectorComponent):
 		assert (len(side_buttons) == 8)
 		assert isinstance(config_button, ButtonElement)
 		ModeSelectorComponent.__init__(self)
+		self._m4lmode_index = 0		
+		self.init_m4l_interface()
+		self._attributes = [ '-' for _ in range(8) ]
+		self._attribute_names = [ '-' for _ in range(8) ]
+		self._info = [' ', ' ']
+		self._map_name = MAP_NAMES[self._m4lmode_index]
 		self._parent = parent
 		self._compact = False
 		self._session = SpecialSessionComponent(matrix.width(), matrix.height())
@@ -75,7 +88,50 @@ class MainSelectorComponent(ModeSelectorComponent):
 		self._nav_buttons = None
 		self._config_button = None
 		ModeSelectorComponent.disconnect(self)
+	def set_m4lmode(self,mode_str):
+		#self.log(mode_str)
+		if mode_str == 'SCALE':			
+			self._m4lmode_index = 8
+		elif mode_str == 'QUICK_SCALE':
+			self._m4lmode_index = 9
+		elif mode_str == 'MULTINOTE':			
+			self._m4lmode_index = 10
+		elif mode_str == 'INST':
+			self._m4lmode_index = 1
+		elif mode_str == 'STEP':
+			self._m4lmode_index = 4
+		self.refresh_map_display()
+		
+	@property
+	def mode_name(self):
+		""" Returns the name of the current mode. """
+		#self.log(MODE_NAMES[self._m4lmode_index])
+		return MODE_NAMES[self._m4lmode_index]
 
+	@property
+	def mode_attributes(self):
+		""" Returns the attributes of the current mode. """
+		#self.log(self._attributes)
+		return self._attributes
+
+	@property
+	def mode_attribute_names(self):
+		""" Returns the names of the attributes of the current mode. """
+		#self.log(self._attributes_names)
+		return self._attribute_names
+
+	@property
+	def mode_info(self):
+		""" Returns info about the current mode. """
+		#self.log(self._info)
+		return self._info
+
+	@property
+	def mode_map(self):
+		""" Returns the name of the relevant map for the current mode. """
+		#self.log(MAP_NAMES[self._m4lmode_index])
+		return MAP_NAMES[self._m4lmode_index]
+		
 	def session_component(self):
 		return self._session
 
@@ -210,6 +266,8 @@ class MainSelectorComponent(ModeSelectorComponent):
 			
 			if self._main_mode_index == 0:
 				#session
+				self._m4lmode_index = 0
+				self.refresh_map_display()
 				self._setup_mixer(not as_active)
 				self._setup_device_controller(not as_active)
 				self._setup_step_sequencer(not as_active)
@@ -235,6 +293,8 @@ class MainSelectorComponent(ModeSelectorComponent):
 					self._update_control_channels()
 				else:
 					#plain user mode 1
+					self._m4lmode_index = 3
+					self.refresh_map_display()
 					self._setup_device_controller(not as_active)
 					self._setup_instrument_controller(not as_active)
 					self._setup_user_mode(True, True, False, True)
@@ -247,20 +307,29 @@ class MainSelectorComponent(ModeSelectorComponent):
 				self._setup_mixer(not as_active)
 				if self._sub_mode_index[self._main_mode_index]==0:
 					#stepseq
+					self._m4lmode_index = 4
+					self.refresh_map_display()
 					self._setup_step_sequencer2(not as_active)
 					self._setup_step_sequencer(as_active)
 				elif self._sub_mode_index[self._main_mode_index]==1:
 					#melodic step seq
+					self._m4lmode_index = 5
+					self.refresh_map_display()
 					self._setup_step_sequencer(not as_active)
 					self._setup_step_sequencer2(as_active)				
 				else:
 					#plain user mode 2
+					self._m4lmode_index = 6
+					self.refresh_map_display()
 					self._setup_step_sequencer(not as_active)
 					self._setup_step_sequencer2(not as_active)
 					self._setup_user_mode(False, False, False, False)
 				self._update_control_channels()
 				
 			elif self._main_mode_index == 3:
+				#mixer				
+				self._m4lmode_index = 7
+				self.refresh_map_display()
 				self._setup_device_controller(not as_active)
 				self._setup_step_sequencer(not as_active)
 				self._setup_step_sequencer2(not as_active)
@@ -330,6 +399,8 @@ class MainSelectorComponent(ModeSelectorComponent):
 	def _setup_instrument_controller(self, enabled):
 		if self._instrument_controller != None:
 			if enabled:
+				self._m4lmode_index = 1
+				self.refresh_map_display()
 				self._activate_matrix(False)
 				self._activate_scene_buttons(True)
 				self._activate_navigation_buttons(True)
@@ -348,6 +419,8 @@ class MainSelectorComponent(ModeSelectorComponent):
 	def _setup_device_controller(self, as_active):
 		if self._device_controller!=None:
 			if as_active:
+				self._m4lmode_index = 2
+				self.refresh_map_display()
 				self._activate_scene_buttons(True)
 				self._activate_matrix(True)
 				self._activate_navigation_buttons(True)

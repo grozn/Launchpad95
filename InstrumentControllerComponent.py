@@ -120,11 +120,13 @@ class InstrumentControllerComponent(CompoundComponent):
 			self._scales_toggle_button.set_on_off_values(AMBER_FULL,AMBER_THIRD)
 			if (value is not 0):
 				self._scales.set_enabled(True)
+				self._parent.set_m4lmode('SCALE')
 				self._scales_toggle_button.turn_on()
 				self._scales.update()
 			else:
 				self._scales_toggle_button.turn_off()
 				self._scales.set_enabled(False)
+				self._parent.set_m4lmode('INST')
 				self.update()	
 	
 	def _can_scroll_octave_up(self):
@@ -343,6 +345,7 @@ class InstrumentControllerComponent(CompoundComponent):
 											
 			else:
 				if self._scales.is_quick_scale:
+					self._parent.set_m4lmode('QUICK_SCALE')
 					quick_scale_root_button  = self._matrix.get_button(7,0)
 					quick_scale_root_button.set_on_off_values(RED_THIRD,RED_FULL)
 					quick_scale_root_button.set_enabled(True)

@@ -1108,6 +1108,7 @@ class StepSequencerComponent(CompoundComponent):
 					self._scale_selector_button.set_on_off_values(LED_OFF,LED_OFF)
 				if self._mode==STEPSEQ_MODE_SCALE_EDIT:
 					self._scale_selector_button.turn_on()
+					self._parent.set_m4lmode('SCALE')
 				else:
 					self._scale_selector_button.turn_off()
 
@@ -1170,8 +1171,10 @@ class StepSequencerComponent(CompoundComponent):
 					self._mode_button.set_on_off_values(AMBER_FULL,AMBER_THIRD)
 					if self._mode == STEPSEQ_MODE_MULTINOTE:
 						self._mode_button.turn_on()
+						self._parent.set_m4lmode('MULTINOTE')
 					else:
 						self._mode_button.turn_off()
+						self._parent.set_m4lmode('STEP')
 				else:
 					self._mode_button.set_on_off_values(LED_OFF,LED_OFF)
 					self._mode_button.turn_off()

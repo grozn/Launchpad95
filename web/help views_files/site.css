@@ -1,0 +1,38 @@
+body {
+  margin:0 0 30px 0;
+  padding:0; 
+  background:#666666;
+  color:white;
+  text-align:center
+}
+
+/*links*/
+a {color:#cccccc}
+a:link {color: #cccccc}
+a:visited {color: #cccccc}
+a:hover	{color: #FF6600; background:#585858}
+a:active {color: #ff6633}
+
+a img {border:none} /*IE sux*/
+
+ul {margin:0}
+li {list-style-type:none; margin:0}				
+
+div { margin-left: auto; margin-right: auto;}
+
+table { margin-left: auto; margin-right: auto;}
+td {vertical-align: bottom }
+
+p {margin:6px 0;color:#BBB}
+
+strong {font-size:120%;font-family:arial;letter-spacing:-1px}
+
+#content {margin:0 0 0 50px;width:1000px}
+div.playlist{text-align:left;width:400px;}
+.visible {visibility: visible; display: block}
+.hidden {visibility: hidden; display: none}
+
+
+.floatright {float:right}
+.floatleft {float:left}
+
